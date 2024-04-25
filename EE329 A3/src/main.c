@@ -78,11 +78,21 @@ int main(void)
 
   while (1)
   {
-    delay_us(1000000);
     if (Keypad_IsAnyKeyPressed())
     {
-      int button = KeyPad_whichKeyIsPressed();
-      LCD_write_string("button pressed");
+      int button = Keypad_WhichKeyIsPressed();
+      switch (button) {
+      case 12:
+        LCD_command(CLEAR_SCREEN);
+        // resets the countdown timer
+        break;
+
+      case 14: 
+        LCD_command(CLEAR_SCREEN);
+        // starts the countdown
+        break;
+      
+      }
     }
   }
 }
