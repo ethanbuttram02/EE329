@@ -2,7 +2,7 @@
  * LCD.c
  *
  *  Created on: Apr 23, 2024
- *      Author: sethsaxena and Ethan Buttram
+ *      Author: sethsaxena and ethan buttram
  */
 
 #include "LCD.h"
@@ -18,31 +18,31 @@ void LCD_config(void)
 
 	LCD_PORT->MODER &= ~(GPIO_MODER_MODE0 | GPIO_MODER_MODE1 |
 						 GPIO_MODER_MODE2 | GPIO_MODER_MODE3 |
-						 GPIO_MODER_MODE4 | GPIO_MODER_MODE5 |
-						 GPIO_MODER_MODE6);
+						 GPIO_MODER_MODE8 | GPIO_MODER_MODE9 |
+						 GPIO_MODER_MODE10);
 	// sets PC0-PC3 to general-purpose output mode
 	LCD_PORT->MODER |= (GPIO_MODER_MODE0_0 | GPIO_MODER_MODE1_0 |
 						GPIO_MODER_MODE2_0 | GPIO_MODER_MODE3_0 |
-						GPIO_MODER_MODE4_0 | GPIO_MODER_MODE5_0 |
-						GPIO_MODER_MODE6_0);
+						GPIO_MODER_MODE8_0 | GPIO_MODER_MODE9_0 |
+						GPIO_MODER_MODE10_0);
 	// sets pins to push-pull
 	LCD_PORT->OTYPER &= ~(GPIO_OTYPER_OT0 | GPIO_OTYPER_OT1 |
 						  GPIO_OTYPER_OT2 | GPIO_OTYPER_OT3 |
-						  GPIO_OTYPER_OT4 | GPIO_OTYPER_OT5 |
-						  GPIO_OTYPER_OT6);
+						  GPIO_OTYPER_OT8 | GPIO_OTYPER_OT9 |
+						  GPIO_OTYPER_OT10);
 	// disables PU and PD resistors for LCD pins
 	LCD_PORT->PUPDR &= ~(GPIO_PUPDR_PUPD0 | GPIO_PUPDR_PUPD1 |
 						 GPIO_PUPDR_PUPD2 | GPIO_PUPDR_PUPD3 |
-						 GPIO_PUPDR_PUPD4 | GPIO_PUPDR_PUPD5 |
-						 GPIO_PUPDR_PUPD6);
+						 GPIO_PUPDR_PUPD8 | GPIO_PUPDR_PUPD9 |
+						 GPIO_PUPDR_PUPD10);
 	// sets speed for PD4-PD7 to high
 	LCD_PORT->OSPEEDR |= ((3 << GPIO_OSPEEDR_OSPEED0_Pos) |
 						  (3 << GPIO_OSPEEDR_OSPEED1_Pos) |
 						  (3 << GPIO_OSPEEDR_OSPEED2_Pos) |
 						  (3 << GPIO_OSPEEDR_OSPEED3_Pos) |
-						  (3 << GPIO_OSPEEDR_OSPEED4_Pos) |
-						  (3 << GPIO_OSPEEDR_OSPEED5_Pos) |
-						  (3 << GPIO_OSPEEDR_OSPEED6_Pos));
+						  (3 << GPIO_OSPEEDR_OSPEED8_Pos) |
+						  (3 << GPIO_OSPEEDR_OSPEED9_Pos) |
+						  (3 << GPIO_OSPEEDR_OSPEED10_Pos));
 }
 
 void LCD_init(void)

@@ -2,7 +2,7 @@
  * LCD.h
  *
  *  Created on: Apr 23, 2024
- *      Author: seth saxena and Ethan Buttram
+ *      Author: sethsaxena and Ethan Buttram
  */
 #include "stm32l4xx_hal.h"
 
