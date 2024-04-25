@@ -65,20 +65,25 @@ int main(void)
   LCD_config();
   LCD_init();
   // write to lCD
-   
+
   delay_us(200000); // delay for LCD initialization
 
-  LCD_command(CLEAR_SCREEN);  // clear screen
+  LCD_command(CLEAR_SCREEN); // clear screen
 
   // LCD start message
   LCD_write_string("EE 329 A3 Timer");
-  
+
   LCD_command(WRITE_2ND_LINE);
   LCD_write_string("*=Set #=Go 00:00");
-  
+
   while (1)
   {
-    
+    delay_us(1000000);
+    if (Keypad_IsAnyKeyPressed())
+    {
+      int button = KeyPad_whichKeyIsPressed();
+      LCD_write_string("button pressed");
+    }
   }
 }
 
