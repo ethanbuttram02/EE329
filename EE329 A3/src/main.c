@@ -78,22 +78,30 @@ int main(void)
 
   while (1)
   {
-    if (Keypad_IsAnyKeyPressed())
+    uint32_t sistick1 = SysTick->VAL;
+    uint32_t sistick2 = SysTick->VAL;
+
+    while(sistick2 < 950000)
     {
-      int button = Keypad_WhichKeyIsPressed();
-      switch (button) {
+      switch (Keypad_WhichKeyIsPressed()) {
       case 12:
         LCD_command(CLEAR_SCREEN);
-        // resets the countdown timer
+        LCD_write_string("* pressed");
+        delay(500);
         break;
+      break;
+    break;
 
       case 14: 
         LCD_command(CLEAR_SCREEN);
-        // starts the countdown
+        LCD_write_string("# pressed");
         break;
-      
+      break;
+    break;
       }
+      sistick2 = SysTick->VAL;
     }
+    delay_us(1000000-(sistick2-sistick1));
   }
 }
 
