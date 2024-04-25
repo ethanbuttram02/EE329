@@ -108,3 +108,11 @@ void LCD_write_char(uint8_t letter)
 	LCD_command(letter);		// character to print
 	LCD_PORT->ODR &= ~(LCD_RS); // RS = LO
 }
+
+void LCD_write_string(char *mystring) {
+	// takes in a pointer to a string and iterates through it
+	size_t length = strlen(mystring); 	// how long to iterate for
+	for (size_t i = 0; i < length; i++) {	
+		LCD_write_char((int)mystring[i]);	// passes a casted char to int and sends ascii decimal value to the LCD
+  }
+}

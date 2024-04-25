@@ -21,5 +21,6 @@ void LCD_pulse_ENA(void);
 void LCD_4b_command(uint8_t command);
 void LCD_command(uint8_t command);
 void LCD_write_char(uint8_t letter);
+void LCD_write_string(char *mystring);
 
 #endif /* INC_LCD_H_ */
