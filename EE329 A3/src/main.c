@@ -74,59 +74,94 @@ int main(void)
   LCD_write_string("EE 329 A3 Timer");
 
   LCD_command(WRITE_2ND_LINE);
-  LCD_write_string("*=Set #=Go ");
-  int time_arr[] = {1,2,5,5};
-
-  int num_presses = 0;
+  LCD_write_string("*=Set #=Go   :  ");
+  int time[4] = {0, 0, 0, 0};
+  int key_map[16] = {1, 2, 3, -1, 4, 5, 6, -1, 7, 8, 9, -1, -1, 0, -1, -1};  // translation for the key map array into integers for count
+  int key_idx = 0;
+  int count = 0;
+  
 
   while(1) {
     if (Keypad_IsAnyKeyPressed()) {
       int button = Keypad_WhichKeyIsPressed();
       switch(button) {
-        case 12:
-        // clear and set the countdown
-          Countdown(time_arr);
+        case 12: 
+
+          // ****************************
+          // ERROR STUFF
+          // lines 98, 99, and 104 are erroring
+          // line 98 and 99 are "a label can only be part of a statement and a declaration is not a statement"
+          // line 104 is "'num_presses' undeclared (first use in this function); did you mean 'pressed'?"
+          //
+          // ****************************
+
+          int is_done = 0;      // checks if the time is fully filled out
+          int num_presses = 0;  // holds the number of key presses
+          while (is_done < 0) { 
+            if (Keypad_IsAnyKeyPressed() != -1) {   // key_map has the letters be -1 so they do nothing
+              int pressed = Keypad_WhichKeyIsPressed();
+              time[num_presses] = key_map[pressed];
+              
+              if (key_idx >= 2) {
+                LCD_command(0xCB + key_idx + 1);  // writes to this section on the screen. +1 to advance the location and preserve the colon for MM:SS display
+                LCD_write_char(key_map[pressed] + 48);  // +48 to become ASCII
+              }
+              else {   
+                LCD_command(0xCB + key_idx);      // writes to the correct location
+                LCD_write_char(key_map[pressed] + 48);  // +48 to become ASCII
+              }
+        
+              num_presses++;
+              key_idx++;
+            
+              if (num_presses >= 4) {
+                is_done++;
+              }
+            }
+          }
         break;
+
         case 14:
-        // start the countdown
+          Countdown(ConvertTime2Seconds(time));
         break;
       }
     }
   }
 }
 
-void Countdown(int time[]) {
-    if (time[0] > 5) time[0] = 5;
-    if (time[2] > 5) time[2] = 5;
-    int count = ((time[0])*60*10) + ((time[1])*60) + ((time[2])*10) + (time[3] + 1); // converts time to seconds
-    uint32_t sistick1 = (SysTick->VAL)/4000000;
-    while(count > 0){
-      
-        if (Keypad_WhichKeyIsPressed() == 12) {
-          return;
-        }
-      
+
+void Countdown(int count) {
+    int time[] = {0,0,0,0}; //initialize to "00:00"
+
+    uint32_t sistick1; //track start time of each cycle in the loop
+    uint32_t sistick2; //track end time of each cycle in the loop
+    while (count > 0) {
+        sistick1 = (SysTick->VAL)/4000000; //start time
         count -= 1;
-        time[0] = (int)((count/60))/10; //stores 10s place of minutes
-        time[1] = (int)((count/60))%10; //store 1s place of minutes
-        time[3] = (int)((count%60))/10; //stores 10s place of seconds
-        time[4] = (int)((count%60))%10; //stores 1s place of seconds
-        for (int i = 0; i < 6; i++){
-            if(i==2){
-                LCD_write_char(58);
-            }
-            else{
-                LCD_command(0xCB+i);
-                LCD_write_char(time[i]+48);
-            }
+
+        time[0] = ((count/60)) / 10; //stores 10s place of minutes
+        time[1] = ((count/60)) % 10; //store 1s place of minutes
+        time[3] = ((count%60)) / 10; //stores 10s place of seconds
+        time[4] = ((count%60)) % 10; //stores 1s place of seconds
+
+        for (int i = 0; i < 5; i++) {
+          LCD_command(0xCB+i); //moves cursor to correct spot
+          LCD_write_char(time[i] + 48);
         }
-        uint32_t sistick2 = (SysTick->VAL)/4000000;
-        delay_us(1000000-(sistick2-sistick1));
+        
+        sistick2 = (SysTick->VAL)/4000000; //end time
+        //delay to maintain one loop cycle per second
+        delay_us(980000-(sistick2-sistick1));
     }
+
     if(count==0){
-        GPIOA->BSRR = (GPIO_PIN_3);
+        GPIOA->BSRR = (GPIO_PIN_3); //count over so turn on LED
     }
 }
+
+int ConvertTime2Seconds(int arr[]) {
+  return ((arr[0])*60*10) + ((arr[1])*60) + ((arr[3])*10) + (arr[4]); // converts time to seconds
+} 
 
 /**
  * @brief System Clock Configuration
