@@ -74,35 +74,58 @@ int main(void)
   LCD_write_string("EE 329 A3 Timer");
 
   LCD_command(WRITE_2ND_LINE);
-  LCD_write_string("*=Set #=Go 00:00");
+  LCD_write_string("*=Set #=Go ");
+  int time_arr[] = {1,2,5,5};
 
-  while (1)
-  {
-    uint32_t sistick1 = SysTick->VAL;
-    uint32_t sistick2 = SysTick->VAL;
+  int num_presses = 0;
 
-    while(sistick2 < 950000)
-    {
-      switch (Keypad_WhichKeyIsPressed()) {
-      case 12:
-        LCD_command(CLEAR_SCREEN);
-        LCD_write_string("* pressed");
-        delay(500);
+  while(1) {
+    if (Keypad_IsAnyKeyPressed()) {
+      int button = Keypad_WhichKeyIsPressed();
+      switch(button) {
+        case 12:
+        // clear and set the countdown
+          Countdown(time_arr);
         break;
-      break;
-    break;
-
-      case 14: 
-        LCD_command(CLEAR_SCREEN);
-        LCD_write_string("# pressed");
+        case 14:
+        // start the countdown
         break;
-      break;
-    break;
       }
-      sistick2 = SysTick->VAL;
     }
-    delay_us(1000000-(sistick2-sistick1));
   }
+}
+
+void Countdown(int time[]) {
+    if (time[0] > 5) time[0] = 5;
+    if (time[2] > 5) time[2] = 5;
+    int count = ((time[0])*60*10) + ((time[1])*60) + ((time[2])*10) + (time[3] + 1); // converts time to seconds
+    uint32_t sistick1 = (SysTick->VAL)/4000000;
+    while(count > 0){
+      
+        if (Keypad_WhichKeyIsPressed() == 12) {
+          return;
+        }
+      
+        count -= 1;
+        time[0] = (int)((count/60))/10; //stores 10s place of minutes
+        time[1] = (int)((count/60))%10; //store 1s place of minutes
+        time[3] = (int)((count%60))/10; //stores 10s place of seconds
+        time[4] = (int)((count%60))%10; //stores 1s place of seconds
+        for (int i = 0; i < 6; i++){
+            if(i==2){
+                LCD_write_char(58);
+            }
+            else{
+                LCD_command(0xCB+i);
+                LCD_write_char(time[i]+48);
+            }
+        }
+        uint32_t sistick2 = (SysTick->VAL)/4000000;
+        delay_us(1000000-(sistick2-sistick1));
+    }
+    if(count==0){
+        GPIOA->BSRR = (GPIO_PIN_3);
+    }
 }
 
 /**
