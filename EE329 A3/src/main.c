@@ -66,18 +66,18 @@ int main(void)
 	char str[] = "EE 329 A3 TIMER ";
 	char str2[] = "*=SET #=GO 00:00";
 	LCD_write_string(str);
-	LCD_command(0xC0);
+	LCD_command(0xC0); // move cursor to next line
 	LCD_write_string(str2);
-	int count = 0; // seconds needed to count
-	char timec[5] = "00:00";
-	int time1[5] = {0, 0, 10, 0, 0};
-	int key_map[17] = {1, 2, 3, 10, 4, 5, 6, 11, 7, 8, 9, 12, -6, 0, -13, 14, 0};
-	int key_idx = 0;
+	int count = 0;																  // seconds needed to count
+	char timec[5] = "00:00";													  // stored time
+	int time1[5] = {0, 0, 10, 0, 0};											  // array of zeros, 10 in the middle cuz 10+48 is 58, ascii code for ':'
+	int key_map[17] = {1, 2, 3, 10, 4, 5, 6, 11, 7, 8, 9, 12, -6, 0, -13, 14, 0}; // real values of keypress
+	int key_idx = 0;															  // tracking index into key_map
 	while (1)
 	{
 		switch (STATE)
 		{
-		case STATE_WAIT:
+		case STATE_WAIT: // waits for '*' or '#' press
 			while (!(Keypad_IsAnyKeyPressed()))
 			{
 				;
@@ -85,50 +85,52 @@ int main(void)
 			key_idx = Keypad_WhichKeyIsPressed();
 			if (key_idx == 12)
 			{
-				STATE = STATE_ENTER;
+				STATE = STATE_ENTER; // go to state enter if '*' press
 			}
 			else if (key_idx == 14)
-			{
+			{ // go to state count if '#' press
 				STATE = STATE_COUNT;
 			}
 			break;
+		// State that takes care of keypad entry for countdown time
 		case STATE_ENTER:
-			LCD_command(0xCB);
-			LCD_write_string(timec);
-			LCD_command(0xCB);
-			int overflow = 0;
+			LCD_command(0xCB);		 // moves cursor to tens position of the minutes
+			LCD_write_string(timec); // writes stored time in the location
+			LCD_command(0xCB);		 // resets cursor
 			for (int num_press = 0; num_press < 5; num_press++)
 			{
 				if (num_press != 2)
-				{
-					if (overflow == 0)
-					{
-						while (!(Keypad_IsAnyKeyPressed()))
-						{
-							delay_us(100);
-						}
+				{ // keeps ':'
+					while (!(Keypad_IsAnyKeyPressed()))
+					{				   // wait for key to be pressed
+						delay_us(100); // delay for consistency
 					}
 					key_idx = Keypad_WhichKeyIsPressed();
 					// prevent entries greater than 59:59
 					if (key_map[key_idx] >= 0 && key_map[key_idx] < 10)
-					{
+					{ // if 0-9 entered
 						time1[num_press] = key_map[key_idx];
+						// if entry for tens place of minute or second is > 5
 						if ((num_press == 0 || num_press == 3) && (time1[num_press] > 5))
 						{
+							// "this whole chuck just prints 59... thats all it does" - seth before filming
 							time1[num_press] = 5;
-							overflow = 1;
-							GPIOA->BSRR = GPIO_PIN_3;
+							time1[num_press + 1] = 9;
+							count = ((time1[0]) * 60 * 10) + ((time1[1]) * 60) +
+									((time1[3]) * 10) + (time1[4]);
+							LCD_command(0xCB + num_press);
+							LCD_write_char(time1[num_press] + 48);
+							LCD_command(0xCC + num_press);
+							LCD_write_char(time1[num_press + 1] + 48);
+							num_press++;
 						}
-						else if ((num_press == 1 || num_press == 4) && (overflow == 1))
+						else
 						{
-							time1[num_press] = 9;
-							overflow = 0;
-							GPIOA->BRR = GPIO_PIN_3;
+							count = ((time1[0]) * 60 * 10) + ((time1[1]) * 60) +
+									((time1[3]) * 10) + (time1[4]);
+							LCD_command(0xCB + num_press);
+							LCD_write_char(time1[num_press] + 48);
 						}
-						count = ((time1[0]) * 60 * 10) + ((time1[1]) * 60) +
-								((time1[3]) * 10) + (time1[4]);
-						LCD_command(0xCB + num_press);
-						LCD_write_char(time1[num_press] + 48);
 					}
 					else if (key_idx == 13)
 					{
@@ -146,7 +148,7 @@ int main(void)
 				}
 				else
 				{
-					LCD_command(0xCE);
+					LCD_command(0xCE); // moves colon over to prevent a display error
 				}
 				delay_us(500000);
 			}
@@ -164,7 +166,7 @@ int main(void)
 			}
 			break;
 		case STATE_END:
-			GPIOA->BSRR = GPIO_PIN_3;
+			GPIOA->BSRR = GPIO_PIN_3; // LED on for finish
 			while (!(Keypad_IsAnyKeyPressed()))
 			{
 				delay_us(100);
@@ -173,7 +175,7 @@ int main(void)
 			delay_us(500000);
 			if (key_idx == 14)
 			{
-				GPIOA->BRR = GPIO_PIN_3;
+				GPIOA->BRR = GPIO_PIN_3; //	led off for pound press
 				STATE = STATE_WAIT;
 			}
 			else
@@ -215,9 +217,13 @@ int Countdown(int count)
 				LCD_write_char(time[i] + 48);
 			}
 		}
+		if (Keypad_WhichKeyIsPressed() == 12)
+		{
+			break;
+		}
 		sistick2 = (SysTick->VAL) / 4000000; // end time
 		// delay to maintain one loop cycle per second
-		delay_us(980000 - (sistick2 - sistick1));
+		delay_us(970000 - (sistick2 - sistick1));
 	}
 	if (count == 0)
 	{
@@ -268,81 +274,6 @@ void SystemClock_Config(void)
 		Error_Handler();
 	}
 }
-
-/**
- * @brief GPIO Initialization Function
- * @param None
- * @retval None
- */
-// static void MX_GPIO_Init(void)
-//{
-//   GPIO_InitTypeDef GPIO_InitStruct = {0};
-///* USER CODE BEGIN MX_GPIO_Init_1 */
-///* USER CODE END MX_GPIO_Init_1 */
-//
-//  /* GPIO Ports Clock Enable */
-//  __HAL_RCC_GPIOC_CLK_ENABLE();
-//  __HAL_RCC_GPIOH_CLK_ENABLE();
-//  __HAL_RCC_GPIOB_CLK_ENABLE();
-//  __HAL_RCC_GPIOG_CLK_ENABLE();
-//  HAL_PWREx_EnableVddIO2();
-//  __HAL_RCC_GPIOA_CLK_ENABLE();
-//
-//  /*Configure GPIO pin Output Level */
-//  HAL_GPIO_WritePin(GPIOB, LD3_Pin|LD2_Pin, GPIO_PIN_RESET);
-//
-//  /*Configure GPIO pin Output Level */
-//  HAL_GPIO_WritePin(USB_PowerSwitchOn_GPIO_Port, USB_PowerSwitchOn_Pin, GPIO_PIN_RESET);
-//
-//  /*Configure GPIO pin : B1_Pin */
-//  GPIO_InitStruct.Pin = B1_Pin;
-//  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-//  GPIO_InitStruct.Pull = GPIO_NOPULL;
-//  HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
-//
-//  /*Configure GPIO pins : LD3_Pin LD2_Pin */
-//  GPIO_InitStruct.Pin = LD3_Pin|LD2_Pin;
-//  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-//  GPIO_InitStruct.Pull = GPIO_NOPULL;
-//  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-//  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-//
-//  /*Configure GPIO pin : USB_OverCurrent_Pin */
-//  GPIO_InitStruct.Pin = USB_OverCurrent_Pin;
-//  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-//  GPIO_InitStruct.Pull = GPIO_NOPULL;
-//  HAL_GPIO_Init(USB_OverCurrent_GPIO_Port, &GPIO_InitStruct);
-//
-//  /*Configure GPIO pin : USB_PowerSwitchOn_Pin */
-//  GPIO_InitStruct.Pin = USB_PowerSwitchOn_Pin;
-//  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-//  GPIO_InitStruct.Pull = GPIO_NOPULL;
-//  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-//  HAL_GPIO_Init(USB_PowerSwitchOn_GPIO_Port, &GPIO_InitStruct);
-//
-//  /*Configure GPIO pins : STLK_RX_Pin STLK_TX_Pin */
-//  GPIO_InitStruct.Pin = STLK_RX_Pin|STLK_TX_Pin;
-//  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-//  GPIO_InitStruct.Pull = GPIO_NOPULL;
-//  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-//  GPIO_InitStruct.Alternate = GPIO_AF8_LPUART1;
-//  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
-//
-//  /*Configure GPIO pins : USB_SOF_Pin USB_ID_Pin USB_DM_Pin USB_DP_Pin */
-//  GPIO_InitStruct.Pin = USB_SOF_Pin|USB_ID_Pin|USB_DM_Pin|USB_DP_Pin;
-//  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-//  GPIO_InitStruct.Pull = GPIO_NOPULL;
-//  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-//  GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
-//  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-//
-///* USER CODE BEGIN MX_GPIO_Init_2 */
-///* USER CODE END MX_GPIO_Init_2 */
-//}
-
-/* USER CODE BEGIN 4 */
-
-/* USER CODE END 4 */
 
 /**
  * @brief  This function is executed in case of error occurrence.
