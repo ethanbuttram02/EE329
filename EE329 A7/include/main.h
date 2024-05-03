@@ -51,6 +51,9 @@ extern "C" {
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
+void LPUART_Print(char*);
+void LPUART1_IRQHandler(void);
+
 
 /* USER CODE BEGIN EFP */
 

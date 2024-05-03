@@ -17,44 +17,10 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
+#include <main.h>
 
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-/* USER CODE BEGIN PFP */
 
-/* USER CODE END PFP */
-
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
 
 /**
   * @brief  The application entry point.
@@ -62,42 +28,57 @@ void SystemClock_Config(void);
   */
 int main(void)
 {
-
-  /* USER CODE BEGIN 1 */
-
-  /* USER CODE END 1 */
-
-  /* MCU Configuration--------------------------------------------------------*/
-
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
-
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
-  /* Configure the system clock */
   SystemClock_Config();
 
-  /* USER CODE BEGIN SysInit */
+  PWR->CR2 |= (PWR_CR2_IOSV);              // power avail on PG[15:2] (LPUART1)
+  RCC->AHB2ENR |= (RCC_AHB2ENR_GPIOGEN);   // enable GPIOG clock
+  RCC->APB1ENR2 |= RCC_APB1ENR2_LPUART1EN; // enable LPUART clock bridge
+  /* USER: configure GPIOG registers MODER/PUPDR/OTYPER/OSPEEDR then
+    select AF mode and specify which function with AFR[0] and AFR[1] */
+  LPUART1->CR1 &= ~(USART_CR1_M1 | USART_CR1_M0); // 8-bit data 
+  LPUART1->CR1 |= USART_CR1_UE;                   // enable LPUART1
+  LPUART1->CR1 |= (USART_CR1_TE | USART_CR1_RE);  // enable xmit & recv
+  LPUART1->CR1 |= USART_CR1_RXNEIE;        // enable LPUART1 recv interrupt
+  LPUART1->ISR &= ~(USART_ISR_RXNE);       // clear Recv-Not-Empty flag
+  /* USER: set baud rate register (LPUART1->BRR) */ 
+  NVIC->ISER[2] = (1 << (LPUART1_IRQn & 0x1F));   // enable LPUART1 ISR
+  void __enable_irq(void);                          // enable global interrupts
 
-  /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
-  /* USER CODE BEGIN 2 */
-
-  /* USER CODE END 2 */
-
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
+    // WRITE CODE HERE n STUFF
   }
-  /* USER CODE END 3 */
 }
+
+void LPUART_Print(char* message) {
+   uint16_t iStrIdx = 0;
+   while (message[iStrIdx] != 0 ) {
+      while(!(LPUART1->ISR & USART_ISR_TXE)) // wait for empty xmit buffer
+         ;                          
+      LPUART1->TDR = message[iStrIdx];       // send this character
+	iStrIdx++;                             // advance index to next char
+   }
+}
+
+void LPUART1_IRQHandler(void) {
+   uint8_t charRecv;
+   if (LPUART1->ISR & USART_ISR_RXNE) {
+      charRecv = LPUART1->RDR;
+      switch ( charRecv ) {
+	   case 'R':
+            /* USER: process R to ESCape code back to terminal */
+	      break;
+         /* USER : handle other ESCape code cases */
+	   default:
+	      while( !(LPUART1->ISR & USART_ISR_TXE) )
+               ;    // wait for empty TX buffer
+		LPUART1->TDR = charRecv;  // echo char to terminal
+	}  // end switch
+   }
+}
+
+
 
 /**
   * @brief System Clock Configuration
