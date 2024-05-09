@@ -73,26 +73,30 @@ void LPUART1_IRQHandler(void)
         switch (charRecv)
         {
         case 'R':
-            LPUART_ESC_Print("[31m");
+            // R
+            LPUART_ESC_Print("[41m");
             break;
         case 'G':
-            LPUART_ESC_Print("[32m");
+            // G
+            LPUART_ESC_Print("[42m");
             break;
         case 'B':
-            LPUART_ESC_Print("[36m");
+            // B
+            LPUART_ESC_Print("[46m");
             break;
         case 'W':
-            LPUART_ESC_Print("[37m");
+            // W
+            LPUART_ESC_Print("[47m");
             break;
         case 'w': // up
             // move up
             LPUART_ESC_Print("[2J");
             vert--;
-            if (vert < 3)
+            if (vert <= 1)
             {
-                center[1] = 2 + '0';
-                center[2] = 9 + '0';
-                vert = 29;
+                center[1] = 1 + '0';
+                center[2] = 5 + '0';
+                vert = 15;
             }
             else
             {
@@ -105,11 +109,11 @@ void LPUART1_IRQHandler(void)
         case 's': // down
             LPUART_ESC_Print("[2J");
             vert++;
-            if (vert > 29)
+            if (vert >= 16)
             {
                 center[1] = 0 + '0';
-                center[2] = 3 + '0';
-                vert = 3;
+                center[2] = 2 + '0';
+                vert = 2;
             }
             else
             {
@@ -122,11 +126,11 @@ void LPUART1_IRQHandler(void)
         case 'd': // right
             LPUART_ESC_Print("[2J");
             hor++;
-            if (hor > 99)
+            if (hor >= 78)
             {
-                center[4] = 1 + '0';
-                center[5] = 1 + '0';
-                hor = 11;
+                center[4] = 0 + '0';
+                center[5] = 2 + '0';
+                hor = 2;
             }
             else
             {
@@ -139,11 +143,11 @@ void LPUART1_IRQHandler(void)
         case 'a': // left
             LPUART_ESC_Print("[2J");
             hor--;
-            if (hor < 11)
+            if (hor <= 1)
             {
-                center[4] = 9 + '0';
-                center[5] = 9 + '0';
-                hor = 99;
+                center[4] = 7 + '0';
+                center[5] = 8 + '0';
+                hor = 77;
             }
             else
             {
