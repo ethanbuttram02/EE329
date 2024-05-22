@@ -13,8 +13,9 @@
   * in the root directory of this software component.
   * If no LICENSE file comes with this software, it is provided AS-IS.
   *
-  ******************************************************************************
-  */
+  *****************************************************************************
+**/
+
 #include "main.h"
 
 void SystemClock_Config(void);
@@ -22,12 +23,13 @@ void SystemClock_Config(void);
 int main(void)
 {
   HAL_Init();
+
   SystemClock_Config();
+
   while (1)
   {
-    
-  }
 
+  }
 }
 
 void SystemClock_Config(void)
@@ -70,10 +72,6 @@ void SystemClock_Config(void)
   }
 }
 
-/* USER CODE BEGIN 4 */
-
-/* USER CODE END 4 */
-
 /**
   * @brief  This function is executed in case of error occurrence.
   * @retval None
@@ -97,7 +95,6 @@ void Error_Handler(void)
   * @param  line: assert_param error line source number
   * @retval None
   */
-
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
