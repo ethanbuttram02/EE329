@@ -20,6 +20,14 @@
 
 void SystemClock_Config(void);
 
+
+
+while(!(I2C1->ISR & I2C_ISR_TXIS)) ;   // wait for start condition to transmit
+I2C1->TXDR = (EEPROM_MEMORY_ADDR >> 8) // xmit MSByte of address
+/* address high, address low, data  -  wait at least 5 ms before READ 
+   the READ op has new NBYTES (WRITE 2 then READ 1) & new RD_WRN for 3rd Byte */
+
+
 int main(void)
 {
   HAL_Init();
