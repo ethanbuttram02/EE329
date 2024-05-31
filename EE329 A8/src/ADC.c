@@ -9,6 +9,8 @@ Date: 5/30/24
 #include <main.h>
 #include <uart.h>
 
+uint16_t adcResult;
+
 void ADC_init() {
     // initialize the ADC related GPIO and Registers
 
@@ -57,12 +59,8 @@ void ADC1_2_IRQHandler(void) {
         ADC1->ISR |= ADC_ISR_EOC;
         
         // Read the ADC conversion result
-        uint16_t adcResult = (uint16_t)ADC1->DR;
-        
-        // convert 12 bit result to voltage
-        float voltage = (adcResult / 4095.0f) * 3.3f;
+        adcResult = (uint16_t)ADC1->DR;
 
-        // send the message over UART to terminal
-        //LPUART_Print("WORDS");
+        // handling is done in uart.c
     }
 }

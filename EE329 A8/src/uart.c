@@ -4,22 +4,25 @@
  *  Created on: May 7, 2024
  *      Author: Ethan
  */
-// boundaries vert: 3-29 hor: 11-99
-#include "uart.h"
+
+#include <uart.h>
 #include <main.h>
+#include <ADC.h>
 
 uint8_t numArray[4];
 uint8_t voltArray[4];
-char charArray[4];
-uint16_t count = 2199;  // count = 2199, volt = 1.772 purely a test value
+uint16_t min = 0;
+uint16_t max = 0;
+uint16_t avg = 0;
+uint16_t voltage;
 
-// defining cursor locations for the beginnings of values
-#define minCountPos "[1;6H"
-#define minVoltPos "[1;12H"
-#define maxCountPos "[2;6H"
-#define maxVoltPos "[2;12H"
-#define avgCountPos "[3;6H"
-#define avgVoltPos "[3;12H"
+// defining cursor locations for the beginnings of values on the terminal
+#define minCountPos "[2;6H"
+#define minVoltPos "[2;12H"
+#define maxCountPos "[3;6H"
+#define maxVoltPos "[3;12H"
+#define avgCountPos "[4;6H"
+#define avgVoltPos "[4;12H"
 
 
 void uart_init(void)
@@ -87,29 +90,53 @@ void LPUART1_IRQHandler(void)
         {
         case 'r':
             // r, this is how we initialize everything. r for "run" or "reset"
-            LPUART_ESC_Print("[0;0H");  // resets cursor
+            LPUART_ESC_Print("[0;1H");  // resets cursor
             LPUART_ESC_Print("[2J");
             ADC_UART_init();            // sets up menu
-            
-            
-            /*
-            print shit TEMPLATE
-
-            uint16_t count = 0;
-            LPUART_Make_Counts(count);
-            LPUART_Make_Volts(count);
-            convertDigitsToChars(numArray); // modify chararray
-            LPUART_Print(charArray);        // print chararray
-            LPUART_ESC_Print("[6;0H");  // resets cursor
-            convertDigitsToChars(voltArray);    // modify chararray
-            LPUART_Print(charArray);    // print chararray
-            */
-
         break;
 
-        case ' ':
-            // begin data collection
-            printMin();
+        case 's':
+            /* 
+            s for start, begins data collection, at any time we can reset the
+            table and halt data collection for different calibration tests 
+            without reuploading code
+             */
+            while(charRecv != 'r') {
+                charRecv = LPUART1->RDR;
+                uint16_t samples[20];
+                int sum = 0;
+                
+                for (int i = 0; i < 20; i++) {
+                    samples[i] = adcResult;
+                    sum += adcResult;
+
+                    if (min == 0 || adcResult < min) {
+                        min = adcResult;
+                    }
+                    else if (min <= 0) {
+                        min = 0;
+                    }
+
+                    if (max == 0 || adcResult > max) {
+                        min = samples[i];
+                    }
+                    else if (max >= 3) {
+                        max = 3;
+                    }
+                }
+
+                avg = sum / 20;
+
+                printMin(min);
+                printMax(max);
+                printAvg(avg);
+                printCoilCurrent(voltage);
+            }
+
+            // reinit values to 0
+            min = 0;
+            max = 0;
+            avg = 0;
         break;
             
         default:
@@ -129,68 +156,101 @@ void ADC_UART_init() {
         to modify the counts and volts value, I will use LPUART_ESC_Print to move the cursor to the line and overwrite the value there
     */
 
-   LPUART_ESC_Print("[0;0H");            // sets cursor to origin (0,0)
+   LPUART_ESC_Print("[1;0H");            // sets cursor to origin (0,0)
    LPUART_Print("ADC counts volts");     // line 1
-   LPUART_ESC_Print("[1;0H");            // newline
-   LPUART_Print("MIN  0000  0.000 V");   // line 2
    LPUART_ESC_Print("[2;0H");            // newline
-   LPUART_Print("MAX  0000  0.000 V");   // line 3
+   LPUART_Print("MIN  0000  0.000 V");   // line 2
    LPUART_ESC_Print("[3;0H");            // newline
-   LPUART_Print("AVG  0000  0.000 V");   // line 4
+   LPUART_Print("MAX  0000  0.000 V");   // line 3
    LPUART_ESC_Print("[4;0H");            // newline
+   LPUART_Print("AVG  0000  0.000 V");   // line 4
+   LPUART_ESC_Print("[5     ;0H");            // newline
    LPUART_Print("coil current = 0.000 A");  // coil current line
    LPUART_ESC_Print("[0;0H");            // resets cursor
 }
 
-void LPUART_Make_Counts(uint16_t num) {
+uint8_t* LPUART_Make_Counts(uint16_t num) {
    numArray[0] = num / 1000;  //take thousands place
    numArray[1] = (num / 100) % 10;  //take hundreds place
    numArray[2] = (num / 10) % 10;  //take tens place
    numArray[3] = num % 10;  //take ones place
+   return numArray;
 }
 
-void LPUART_Make_Volts(uint16_t num){
-    uint16_t voltage = (num * 3300)/4095; //convert number to voltage
+uint8_t* LPUART_Make_Volts(uint16_t num){
+    voltage = (num * 3300)/4095; //convert number to voltage
     voltArray[0] = voltage / 1000; //grab thousands place (V)
     voltArray[1] = (voltage / 100) % 10; //grab hundreds place (100mV)
     voltArray[2] = (voltage / 10) % 10; //grab tens place (10mV)
     voltArray[3] = voltage % 10; //grab ones place (1mV)
+    return voltArray;
 }
 
 
-void convertDigitsToChars(uint8_t* digits) {
-    // Function to convert an array of uint8_t digits to an array of char representations
+char* convertDigitsToChars(uint8_t* digits) {
+    // Allocate memory for the resulting char array (5 characters: 4 digits + 1 null terminator)
+    char* charArray = (char*)malloc(5 * sizeof(char));
+    if (charArray == NULL) return NULL; // Check for allocation failure
+
+    // Convert each digit to the corresponding character
     for (uint8_t i = 0; i < 4; i++) {
         charArray[i] = digits[i] + '0'; // Convert digit to character, adding '0' converts to ASCII 
     }
+    // Null-terminate the string
+    charArray[4] = '\0';
+
+    return charArray;
 }
 
-void printMin() {
-    LPUART_ESC_Print(minCountPos); // set cursor to overwrite min counts
-    LPUART_Make_Counts(count);
-    LPUART_Make_Volts(count);
-    convertDigitsToChars(numArray); // modify chararray
-    LPUART_Print(charArray);
-    delay_us(50);
+void printMin(uint16_t min) {
+    // Print minCountPos
+    LPUART_ESC_Print(minCountPos);
+    LPUART_Print(convertDigitsToChars(LPUART_Make_Counts(min)));
+
     LPUART_ESC_Print(minVoltPos);
-    convertDigitsToChars(voltArray);
-    LPUART_Print("1.772");
+    LPUART_Print(convertDigitsToChars(LPUART_Make_Volts(min)));
+
+    LPUART_ESC_Print(minVoltPos);
+    LPUART_ESC_Print("[2;13H");
+    LPUART_Print(convertDigitsToChars(LPUART_Make_Volts(min)));
+
+    LPUART_ESC_Print("[2;13H");
+    LPUART_Print(".");
 }
 
-void printMax() {
+void printMax(uint16_t max) {
+    // Print minCountPos
+    LPUART_ESC_Print(maxCountPos);
+    LPUART_Print(convertDigitsToChars(LPUART_Make_Counts(max)));
 
+    LPUART_ESC_Print(maxVoltPos);
+    LPUART_Print(convertDigitsToChars(LPUART_Make_Volts(max)));
+
+    LPUART_ESC_Print(maxVoltPos);
+    LPUART_ESC_Print("[3;13H");
+    LPUART_Print(convertDigitsToChars(LPUART_Make_Volts(max)));
+
+    LPUART_ESC_Print("[3;13H");
+    LPUART_Print(".");
 }
 
-void printAvg() {
+void printAvg(uint16_t avg) {
+    // Print minCountPos
+    LPUART_ESC_Print(avgCountPos);
+    LPUART_Print(convertDigitsToChars(LPUART_Make_Counts(avg)));
 
+    LPUART_ESC_Print(avgVoltPos);
+    LPUART_Print(convertDigitsToChars(LPUART_Make_Volts(avg)));
+
+    LPUART_ESC_Print(avgVoltPos);
+    LPUART_ESC_Print("[4;13H");
+    LPUART_Print(convertDigitsToChars(LPUART_Make_Volts(avg)));
+
+    LPUART_ESC_Print("[4;13H");
+    LPUART_Print(".");
 }
 
-void delay_us(const uint32_t time_us)
-{
-    // set the counts for the specified delay
-    SysTick->LOAD = (uint32_t)((time_us * (SystemCoreClock / 1000000)) - 1);
-    SysTick->VAL = 0;                               // clear timer count
-    SysTick->CTRL &= ~(SysTick_CTRL_COUNTFLAG_Msk); // clear count flag
-    while (!(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk))
-        ; // wait for flag
+void printCoilCurrent(uint16_t voltage) {
+    float current = voltage / 8.0;
+    LPUART_Print(convertDigitsToChars(LPUART_Make_Counts(current)); 
 }
