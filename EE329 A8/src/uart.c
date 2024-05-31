@@ -11,6 +11,15 @@
 uint8_t numArray[4];
 uint8_t voltArray[4];
 char charArray[4];
+uint16_t count = 2199;  // count = 2199, volt = 1.772 purely a test value
+
+// defining cursor locations for the beginnings of values
+#define minCountPos "[1;6H"
+#define minVoltPos "[1;12H"
+#define maxCountPos "[2;6H"
+#define maxVoltPos "[2;12H"
+#define avgCountPos "[3;6H"
+#define avgVoltPos "[3;12H"
 
 
 void uart_init(void)
@@ -78,25 +87,35 @@ void LPUART1_IRQHandler(void)
         {
         case 'r':
             // r, this is how we initialize everything. r for "run" or "reset"
-            ADC_UART_init();            // sets up menu
             LPUART_ESC_Print("[0;0H");  // resets cursor
-
-                LPUART_ESC_Print("[5;0H");  // resets cursor
-                uint16_t count = 890;
-                LPUART_Make_Counts(count);
-                LPUART_Make_Volts(count);
-                convertDigitsToChars(numArray);
-                LPUART_Print(charArray);
-                LPUART_ESC_Print("[6;0H");  // resets cursor
-                convertDigitsToChars(voltArray);
-                LPUART_Print(charArray);
-
+            LPUART_ESC_Print("[2J");
+            ADC_UART_init();            // sets up menu
             
+            
+            /*
+            print shit TEMPLATE
+
+            uint16_t count = 0;
+            LPUART_Make_Counts(count);
+            LPUART_Make_Volts(count);
+            convertDigitsToChars(numArray); // modify chararray
+            LPUART_Print(charArray);        // print chararray
+            LPUART_ESC_Print("[6;0H");  // resets cursor
+            convertDigitsToChars(voltArray);    // modify chararray
+            LPUART_Print(charArray);    // print chararray
+            */
+
+        break;
+
+        case ' ':
+            // begin data collection
+            printMin();
         break;
             
         default:
             while (!(LPUART1->ISR & USART_ISR_TXE));    // wait for empty TX buffer
-            LPUART1->TDR = charRecv;                    // echo char to terminal
+            LPUART1->TDR = charRecv;
+            break;                    // echo char to terminal
         }                                               // end switch
     }
 }
@@ -118,6 +137,9 @@ void ADC_UART_init() {
    LPUART_Print("MAX  0000  0.000 V");   // line 3
    LPUART_ESC_Print("[3;0H");            // newline
    LPUART_Print("AVG  0000  0.000 V");   // line 4
+   LPUART_ESC_Print("[4;0H");            // newline
+   LPUART_Print("coil current = 0.000 A");  // coil current line
+   LPUART_ESC_Print("[0;0H");            // resets cursor
 }
 
 void LPUART_Make_Counts(uint16_t num) {
@@ -141,5 +163,34 @@ void convertDigitsToChars(uint8_t* digits) {
     for (uint8_t i = 0; i < 4; i++) {
         charArray[i] = digits[i] + '0'; // Convert digit to character, adding '0' converts to ASCII 
     }
-    return charArray;
+}
+
+void printMin() {
+    LPUART_ESC_Print(minCountPos); // set cursor to overwrite min counts
+    LPUART_Make_Counts(count);
+    LPUART_Make_Volts(count);
+    convertDigitsToChars(numArray); // modify chararray
+    LPUART_Print(charArray);
+    delay_us(50);
+    LPUART_ESC_Print(minVoltPos);
+    convertDigitsToChars(voltArray);
+    LPUART_Print("1.772");
+}
+
+void printMax() {
+
+}
+
+void printAvg() {
+
+}
+
+void delay_us(const uint32_t time_us)
+{
+    // set the counts for the specified delay
+    SysTick->LOAD = (uint32_t)((time_us * (SystemCoreClock / 1000000)) - 1);
+    SysTick->VAL = 0;                               // clear timer count
+    SysTick->CTRL &= ~(SysTick_CTRL_COUNTFLAG_Msk); // clear count flag
+    while (!(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk))
+        ; // wait for flag
 }
