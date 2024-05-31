@@ -14,7 +14,7 @@ uint8_t voltArray[4];
 uint16_t min = 0;
 uint16_t max = 0;
 uint16_t avg = 0;
-uint16_t voltage;
+uint16_t voltage = 0;
 
 // defining cursor locations for the beginnings of values on the terminal
 #define minCountPos "[2;6H"
@@ -23,6 +23,7 @@ uint16_t voltage;
 #define maxVoltPos "[3;12H"
 #define avgCountPos "[4;6H"
 #define avgVoltPos "[4;12H"
+#define coilCurrentPos "[5;16H"
 
 
 void uart_init(void)
@@ -101,27 +102,21 @@ void LPUART1_IRQHandler(void)
             table and halt data collection for different calibration tests 
             without reuploading code
              */
-            while(charRecv != 'r') {
+            //while(charRecv != 'r') {
                 charRecv = LPUART1->RDR;
-                uint16_t samples[20];
+                uint16_t samples[20] = {2200, 1000, 3500, 1600, 300, 2800, 3700, 2950, 1400, 200, 900, 700, 1800, 1500, 3660, 1900, 2400, 2600, 2800, 3900};
                 int sum = 0;
                 
                 for (int i = 0; i < 20; i++) {
-                    samples[i] = adcResult;
-                    sum += adcResult;
+                    
+                    sum += samples[i];
 
-                    if (min == 0 || adcResult < min) {
-                        min = adcResult;
-                    }
-                    else if (min <= 0) {
-                        min = 0;
-                    }
-
-                    if (max == 0 || adcResult > max) {
+                    if (min == 0 || (samples[i] < min)) {
                         min = samples[i];
                     }
-                    else if (max >= 3) {
-                        max = 3;
+
+                    if (max == 0 || (samples[i] > max)) {
+                        max = samples[i];
                     }
                 }
 
@@ -130,8 +125,8 @@ void LPUART1_IRQHandler(void)
                 printMin(min);
                 printMax(max);
                 printAvg(avg);
-                printCoilCurrent(voltage);
-            }
+                printCoilCurrent(9);
+            //}
 
             // reinit values to 0
             min = 0;
@@ -250,7 +245,15 @@ void printAvg(uint16_t avg) {
     LPUART_Print(".");
 }
 
-void printCoilCurrent(uint16_t voltage) {
-    float current = voltage / 8.0;
-    LPUART_Print(convertDigitsToChars(LPUART_Make_Counts(current)); 
+void printCoilCurrent(uint16_t val) {
+    uint16_t current = (val * 1000) / 8;
+    LPUART_ESC_Print(coilCurrentPos);
+    LPUART_Print(convertDigitsToChars(LPUART_Make_Counts(current))); 
+
+    LPUART_ESC_Print(coilCurrentPos);
+    LPUART_ESC_Print("[5;17H");
+    LPUART_Print(convertDigitsToChars(LPUART_Make_Counts(current)));
+
+    LPUART_ESC_Print("[5;17H");
+    LPUART_Print(".");
 }

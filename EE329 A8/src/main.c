@@ -27,8 +27,6 @@ int main(void)
 {
   HAL_Init();
   SystemClock_Config();
-  ADC_init();
-  NVIC_EnableIRQ(ADC1_2_IRQHandler);
   uart_init();
 }
 

@@ -11,9 +11,9 @@
 
 uint8_t numArray[4];
 uint8_t voltArray[4];
-uint16_t min = 0;
-uint16_t max = 0;
-uint16_t avg = 0;
+uint16_t min;
+uint16_t max;
+uint16_t avg;
 
 void uart_init(void);
 void LPUART_Print(const char *);
@@ -26,4 +26,5 @@ char *convertDigitsToChars(uint8_t* digits);
 void printMin(uint16_t);
 void printMax(uint16_t);
 void printAvg(uint16_t);
+void printCoilCurrent(uint16_t voltage);
 #endif /* INC_UART_H_ */
