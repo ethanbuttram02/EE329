@@ -5,8 +5,10 @@ Date: 5/30/24
 
 */
 
-// function/variable signatures
+#include <main.h>
 
+// function/variable signatures
+uint16_t adcResult;
 void ADC_init(void);
 void ADC1_2_IRQHandler(void);
 void SysTick_Init(void);
