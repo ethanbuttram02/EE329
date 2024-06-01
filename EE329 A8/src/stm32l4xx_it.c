@@ -201,3 +201,18 @@ void SysTick_Handler(void)
 /* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */
+
+// IRQ handler AI generated ChatGPT 6/1/2024
+void EXTI15_10_IRQHandler(void)
+{
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
+}
+
+// EXTI callback AI generated ChatGPT 6/1/2024
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  if (GPIO_Pin == GPIO_PIN_13) {
+    // Toggle PC12 when the button is pressed
+    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_12);
+  }
+}

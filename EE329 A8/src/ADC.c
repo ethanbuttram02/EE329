@@ -10,6 +10,9 @@ Date: 5/30/24
 #include <uart.h>
 
 uint16_t adcResult;
+uint16_t samples[20];
+uint8_t idx = 0;
+uint8_t dataReady = 0;
 
 void ADC_init() {
     // initialize the ADC related GPIO and Registers
@@ -61,7 +64,15 @@ void ADC1_2_IRQHandler(void) {
         // Read the ADC conversion result
         adcResult = (uint16_t)ADC1->DR;
 
-        // handling is done in uart.c
+        // Store the result in the array
+        samples[idx] = adcResult;
+        idx++;
+
+        // Check if the array is full
+        if (idx >= 20) {
+            idx = 0;
+            dataReady = 1;  // Set the flag indicating data is ready for processing
+        }
     }
 }
 

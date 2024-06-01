@@ -27,7 +27,9 @@ int main(void)
 {
   HAL_Init();
   SystemClock_Config();
+  ADC_init();
   uart_init();
+  MX_GPIO_Init();
 }
 
 void SystemClock_Config(void)
@@ -70,6 +72,37 @@ void SystemClock_Config(void)
     Error_Handler();
   }
 }
+
+void MX_GPIO_Init(void)
+{
+  // AI generated Function ChatGPT 6/1/2024
+  // Function enables GPIO pin PC12 to be toggles by the B1 button to drive our coil
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : PC13 (Button) */
+  GPIO_InitStruct.Pin = GPIO_PIN_13;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PC12 (Output) */
+  GPIO_InitStruct.Pin = GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 2, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+}
+
 
 /* USER CODE BEGIN 4 */
 

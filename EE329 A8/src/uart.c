@@ -99,16 +99,14 @@ void LPUART1_IRQHandler(void) {
          break;
 
       case 's':
+      while (charRecv != 'r') {
          /*
           s for start, begins data collection, at any time we can reset the
           table and halt data collection for different calibration tests
           without reuploading code
           */
-         //while(charRecv != 'r') {
          charRecv = LPUART1->RDR;
-         uint16_t samples[20] = { 2200, 1000, 3500, 1600, 300, 2800, 3700, 2950,
-               1400, 200, 900, 700, 1800, 1500, 3660, 1900, 2400, 2600, 2800,
-               3900 };
+         
          int sum = 0;
 
          for (int i = 0; i < 20; i++) {
@@ -139,6 +137,7 @@ void LPUART1_IRQHandler(void) {
          min = 0;
          max = 0;
          avg = 0;
+      }
          break;
 
       default:
