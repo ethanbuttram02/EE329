@@ -21,16 +21,46 @@
 #include <ADC.h>
 #include <uart.h>
 
+uint16_t min = 0;
+uint16_t max = 0;
+uint16_t avg = 0;
+uint32_t sum = 0;
+#define BUFFER_LEN 50
+uint16_t samples[BUFFER_LEN];
+
 void SystemClock_Config(void);
 
 int main(void)
 {
   HAL_Init();
   SystemClock_Config();
-  ADC_init();
   uart_init();
+  ADC_init();
   MX_GPIO_Init();
+
+  while(1) {
+    
+    for (int idx = 0; idx < 1; idx++) {
+      ADC1->CR |= ADC_CR_ADSTART; // start conversion
+      ADC_init();
+
+      while(!dataReady);  // wait for data ready
+
+      samples[idx] = adcResult; // once ready, assign position in array to that value
+      sum += adcResult;
+
+      if (min == 0 || (samples[idx] < min)) {
+          min = samples[idx];
+      }
+      if (max == 0 || (samples[idx] > max)) {
+          max = samples[idx];
+      }
+
+      dataReady = 0;  // data is no longer ready, wait
+    }
+  }
 }
+
 
 void SystemClock_Config(void)
 {

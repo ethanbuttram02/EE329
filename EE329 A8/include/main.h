@@ -28,6 +28,10 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32l4xx_hal.h"
+extern uint16_t min;
+extern uint16_t max;
+extern uint16_t avg;
+extern uint32_t sum;
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */

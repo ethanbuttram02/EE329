@@ -13,9 +13,9 @@
 
 uint8_t numArray[4];
 uint8_t voltArray[4];
-uint16_t min = 0;
-uint16_t max = 0;
-uint16_t avg = 0;
+uint16_t min;
+uint16_t max;
+uint16_t avg;
 uint16_t voltage = 0;
 
 // defines for reused positions on the terminal
@@ -106,23 +106,6 @@ void LPUART1_IRQHandler(void) {
           without reuploading code
           */
          charRecv = LPUART1->RDR;
-         
-         int sum = 0;
-
-         for (int i = 0; i < 20; i++) {
-
-            sum += samples[i];
-
-            if (min == 0 || (samples[i] < min)) {
-               min = samples[i];
-            }
-
-            if (max == 0 || (samples[i] > max)) {
-               max = samples[i];
-            }
-         }
-
-         avg = sum / 20;
 
          printMin(min);
          printMax(max);
@@ -131,12 +114,6 @@ void LPUART1_IRQHandler(void) {
          printStars(calculateStars(avg));
          LPUART_ESC_Print("[26;0H");  // put the cursor off screen
 
-         //}
-
-         // reinit values to 0
-         min = 0;
-         max = 0;
-         avg = 0;
       }
          break;
 

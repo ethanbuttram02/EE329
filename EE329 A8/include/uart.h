@@ -12,9 +12,6 @@
 
 extern uint8_t numArray[4];
 extern uint8_t voltArray[4];
-extern uint16_t min;
-extern uint16_t max;
-extern uint16_t avg;
 
 void uart_init(void);
 void LPUART_Print(const char *);

@@ -5,13 +5,11 @@ Date: 5/30/24
 
 */
 
-#include "ADC.h"
+#include <ADC.h>
 #include <main.h>
 #include <uart.h>
 
 uint16_t adcResult;
-uint16_t samples[20];
-uint8_t idx = 0;
 uint8_t dataReady = 0;
 
 void ADC_init() {
@@ -63,17 +61,9 @@ void ADC1_2_IRQHandler(void) {
         
         // Read the ADC conversion result
         adcResult = (uint16_t)ADC1->DR;
-
-        // Store the result in the array
-        samples[idx] = adcResult;
-        idx++;
-
-        // Check if the array is full
-        if (idx >= 20) {
-            idx = 0;
-            dataReady = 1;  // Set the flag indicating data is ready for processing
-        }
+        dataReady = 1;
     }
+    dataReady = 0;
 }
 
 // configure SysTick timer for use with delay_us().
