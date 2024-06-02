@@ -35,7 +35,7 @@ void ADC_init() {
 
     // configure ADC sampling & sequencing
     ADC1->SQR1  |= (5 << ADC_SQR1_SQ1_Pos);    // sequence = 1 conv., ch 5
-    ADC1->SMPR1 |= (1 << ADC_SMPR1_SMP5_Pos);  // ch 5 sample time = 6.5 clocks
+    ADC1->SMPR1 |= (7 << ADC_SMPR1_SMP5_Pos);  // ch 5 sample time = 6.5 clocks
     ADC1->CFGR  &= ~( ADC_CFGR_CONT  |         // single conversion mode
                     ADC_CFGR_EXTEN |         // h/w trig disabled for s/w trig
                     ADC_CFGR_RES   );        // 12-bit resolution

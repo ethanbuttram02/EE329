@@ -36,28 +36,42 @@ int main(void)
   SystemClock_Config();
   uart_init();
   ADC_init();
+  LPUART_ESC_Print("[2J");
+  ADC_UART_init();
+  LPUART_ESC_Print("[?25L");
   MX_GPIO_Init();
 
   while(1) {
-    
-    for (int idx = 0; idx < 1; idx++) {
-      ADC1->CR |= ADC_CR_ADSTART; // start conversion
-      ADC_init();
+    delay_us(250000); // quarter second delay for stability
+    ADC1->CR |= ADC_CR_ADSTART; // start conversion 
 
-      while(!dataReady);  // wait for data ready
+    for (int idx = 0; idx < BUFFER_LEN; idx++) {  // iterate over the sample array
+        ADC1->CR |= ADC_CR_ADSTART; // start conversion again
 
-      samples[idx] = adcResult; // once ready, assign position in array to that value
-      sum += adcResult;
+        samples[idx] = adcResult; // once ready, assign position in array to that value
+        sum += adcResult; // add the result to the sum for averaging
 
-      if (min == 0 || (samples[idx] < min)) {
-          min = samples[idx];
-      }
-      if (max == 0 || (samples[idx] > max)) {
-          max = samples[idx];
-      }
+        // find min and max
+        if (min == 0 || (samples[idx] < min)) {
+            min = samples[idx];
+        }
+        if (max == 0 || (samples[idx] > max)) {
+            max = samples[idx];
+        }
 
-      dataReady = 0;  // data is no longer ready, wait
+        // calc average
+        avg = sum / BUFFER_LEN;
     }
+    // reset sum for next iteration
+    sum = 0;
+
+    // print data to the display
+    printMin(min);
+    printMax(max);
+    printAvg(avg);
+    printCoilCurrent(adcResult);
+    printStars(calculateStars(avg));
+    LPUART_ESC_Print("[26;0H");  // put the cursor off screen
   }
 }
 

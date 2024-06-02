@@ -85,47 +85,6 @@ void LPUART_Print(const char *message) {
    }
 }
 
-void LPUART1_IRQHandler(void) {
-   uint8_t charRecv;
-   if (LPUART1->ISR & USART_ISR_RXNE) {
-      charRecv = LPUART1->RDR;
-      switch (charRecv) {
-      case 'r':
-         // r, this is how we initialize everything. r for "run" or "reset"
-         LPUART_ESC_Print("[0;1H");  // resets cursor
-         LPUART_ESC_Print("[2J"); // clear screen
-         ADC_UART_init();            // sets up menu
-         LPUART_ESC_Print("[26;0H");  // put the cursor off screen
-         break;
-
-      case 's':
-      while (charRecv != 'r') {
-         /*
-          s for start, begins data collection, at any time we can reset the
-          table and halt data collection for different calibration tests
-          without reuploading code
-          */
-         charRecv = LPUART1->RDR;
-
-         printMin(min);
-         printMax(max);
-         printAvg(avg);
-         printCoilCurrent(9);
-         printStars(calculateStars(avg));
-         LPUART_ESC_Print("[26;0H");  // put the cursor off screen
-
-      }
-         break;
-
-      default:
-         while (!(LPUART1->ISR & USART_ISR_TXE))
-            ;    // wait for empty TX buffer
-         LPUART1->TDR = charRecv;
-         break;                    // echo char to terminal
-      }                                               // end switch
-   }
-}
-
 void ADC_UART_init() {
     /* this function will display the default menu:
         ADC counts volts
@@ -251,7 +210,7 @@ void printAvg(uint16_t avg) {
 }
 
 void printCoilCurrent(uint16_t val) {
-   uint16_t current = (val * 1000) / 8;
+   uint16_t current = (((val * 3300) / 4095)) / 10;
    LPUART_ESC_Print(coilCurrentPos);
    LPUART_Print(convertDigitsToChars(LPUART_Make_Counts(current)));
 
