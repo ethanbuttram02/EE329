@@ -37,7 +37,7 @@
 // Define constant values
 #define CLEAR 0b00000001
 #define NEW_LINE 0b11000000
-#define LCD_PORT GPIOA          // set port A pins for the LCD
+#define LCD_PORT GPIOC          // set port A pins for the LCD
 #define LCD_DATA_BITS 0xF       // Data bits are set as pins 0,1,2,3    PA0: CN10 - 29, PA1: CN10 - 11, PA2: CN10 - 13, PA3: CN9 - 1
 #define LCD_EN GPIO_PIN_4       // Enable bit is set as pin 4           PA4: CN7 - 17
 #define LCD_RW GPIO_PIN_5       // Read/Write bit set as pin 5          PA5: CN7 - 10

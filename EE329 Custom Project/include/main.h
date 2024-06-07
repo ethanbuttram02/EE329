@@ -35,13 +35,19 @@ extern "C" {
 #define TIMEOUT 15000
 
 extern uint16_t samples[BUFFER_LEN];
-extern uint8_t unitFlag = 0; //mph by default
+extern uint8_t unitFlag; //mph by default
 extern uint16_t time1;
 extern uint16_t time2;
-extern uint16_t translationalDistance = 125 * WHEEL_SIZE;  // 1/8 * 1000 * 26
+extern uint16_t translationalDistance;  // 1/8 * 1000 * 26
 extern uint8_t numArray[4];
 extern uint16_t samples[BUFFER_LEN];
 extern uint32_t sum;
+
+uint8_t* make_Counts(uint16_t);
+char* unitConvert(uint16_t);
+char* intToString(uint8_t*);
+char* intToString(uint8_t*);
+
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */

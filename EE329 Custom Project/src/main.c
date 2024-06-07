@@ -22,8 +22,11 @@
 #include <LCD.h>
 #include <button.h>
 
+void SystemClock_Config(void);
+
+// global variable definitions
 uint16_t samples[BUFFER_LEN];
-uint8_t unitFlag = 0; //mph by default
+uint8_t unitFlag = 0; // imperial by default
 uint16_t time1;
 uint16_t time2;
 uint16_t translationalDistance = 125 * WHEEL_SIZE;  // 1/8 * 1000 * 26
@@ -31,17 +34,14 @@ uint8_t numArray[4];
 uint16_t samples[BUFFER_LEN];
 uint32_t sum;
 
-
-void SystemClock_Config(void);
-
 int main(void)
 {
+  
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
   SysTick_Init();
   button_init();
   ADC_init();
-  LCD_config();
   LCD_init();
 
   // initialize screen
