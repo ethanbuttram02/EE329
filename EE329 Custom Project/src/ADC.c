@@ -32,7 +32,7 @@ void ADC_init() {
     ADC1->ISR |= (ADC_ISR_ADRDY);              // set to clr ADC Ready flag
 
     // configure ADC sampling & sequencing
-    ADC1->SQR1  |= (10 << ADC_SQR1_SQ1_Pos);    // sequence = 1 conv., ch 5
+    ADC1->SQR1  |= (5 << ADC_SQR1_SQ1_Pos);    // sequence = 1 conv., ch 5
     ADC1->SMPR1 |= (7 << ADC_SMPR1_SMP5_Pos);  // ch 5 sample time = 6.5 clocks
     ADC1->CFGR  &= ~( ADC_CFGR_CONT  |         // single conversion mode
                     ADC_CFGR_EXTEN |         // h/w trig disabled for s/w trig

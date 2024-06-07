@@ -30,15 +30,17 @@ extern "C" {
 #include "stm32l4xx_hal.h"
 
 #define WHEEL_SIZE 26
-#define BUFFER_LEN 5
-#define THRESHOLD_DISTANCE 2500
-#define TIMEOUT 15000
+#define BUFFER_LEN 25
+#define OPEN 1
+#define CLOSED 2
+#define STOP 3
 
+extern uint8_t STATE;
 extern uint16_t samples[BUFFER_LEN];
 extern uint8_t unitFlag; //mph by default
 extern uint16_t time1;
 extern uint16_t time2;
-extern uint16_t translationalDistance;  // 1/8 * 1000 * 26
+extern uint16_t translationalDistance;  // 1/8 * 26
 extern uint8_t numArray[4];
 extern uint16_t samples[BUFFER_LEN];
 extern uint32_t sum;
@@ -47,6 +49,7 @@ uint8_t* make_Counts(uint16_t);
 char* unitConvert(uint16_t);
 char* intToString(uint8_t*);
 char* intToString(uint8_t*);
+
 
 
 /* Private includes ----------------------------------------------------------*/

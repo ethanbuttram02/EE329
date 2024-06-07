@@ -21,18 +21,22 @@
 #include <ADC.h>
 #include <LCD.h>
 #include <button.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 void SystemClock_Config(void);
 
 // global variable definitions
 uint16_t samples[BUFFER_LEN];
 uint8_t unitFlag = 0; // imperial by default
-uint16_t time1;
-uint16_t time2;
+uint16_t time1 = 0;
+uint16_t time2 =0;
 uint16_t translationalDistance = 125 * WHEEL_SIZE;  // 1/8 * 1000 * 26
 uint8_t numArray[4];
 uint16_t samples[BUFFER_LEN];
 uint32_t sum;
+uint16_t avg = 0;
+uint8_t STATE = 0;
 
 int main(void)
 {
@@ -45,45 +49,84 @@ int main(void)
   LCD_init();
 
   // initialize screen
+
+  LCD_command(CLEAR);
+  LCD_set_cursor(1, 0);
   LCD_write_string("MPH: 0");
   LCD_command(0xC0);  // move cursor to next line
   LCD_write_string("GEAR: 0");
 
-  /* Configure the system clock */
-  SystemClock_Config();
-
   while (1) {
     delay_us(250000); // quarter second delay for LCD response time and stability
     ADC1->CR |= ADC_CR_ADSTART; // start conversion 
-    time1 = SysTick;
-    while(adcResult <= THRESHOLD_DISTANCE) {
-      ADC1->CR |= ADC_CR_ADSTART; // start conversion until adcResult is above the threshold distance
-    }
+    
 
     for (int i = 0; i < BUFFER_LEN; i++) {  // iterate over the sample array
       ADC1->CR |= ADC_CR_ADSTART; // start conversion again
 
       samples[i] = adcResult; // once ready, assign position in array to that value
       sum += adcResult; // add the result to the sum for averaging
-    }
 
-    // average of samples will ensure consistency
-    if ((sum / BUFFER_LEN) <= THRESHOLD_DISTANCE) {
-      time2 = SysTick; 
-      if ((time2 - time1) >= TIMEOUT) { // TIMEOUT condition for when the bike is stopped or moving too slowly to get a speed
+      avg = sum / BUFFER_LEN;
+    }
+    sum = 0;
+
+    LCD_set_cursor(0,5);
+    
+    while(1) {
+    
+    switch(STATE) {
+      case OPEN:
+        ADC1->CR |= ADC_CR_ADSTART; // start conversion
+        if (time1 == 0) {
+          time1 = (SysTick -> VAL) / 4000000;
+        }
+        else if (time2 == 0) {
+          time2 = (SysTick -> VAL) / 4000000;
+        }
+        if (adcResult > 2000) {
+          STATE = CLOSED;
+          LCD_write_string("open");
+          break;
+        }
+
+      break;
+
+      case CLOSED:
+        ADC1->CR |= ADC_CR_ADSTART; // start conversion
+        if (time2 - time1 != 0) {
+              // sets to 0 mph
+        }
+        if (adcResult > 2000) {
+          STATE = OPEN;
+        }
+        else if (adcResult < 2000 || (time2 - time1 <= 1)) {
+          time2 = (SysTick -> VAL) / 4000000;
+          STATE = CLOSED;
+        }
+        else if (time2 - time1 >= 1) {
+          STATE = STOP;
+        }
+      break;
+
+      case STOP:
+        ADC1->CR |= ADC_CR_ADSTART; // start conversion
         LCD_set_cursor(0, 5);     // sets cursor to overwrite speed
         LCD_write_string("    "); // clears speed
         LCD_set_cursor(0, 5);     // resets cursor
-        LCD_write_string("0");    // sets to 0 mph
-        continue;
-      }
-      LCD_set_cursor(0, 5);     // sets cursor to overwrite speed
-      LCD_write_string("    "); // clears speed
-      LCD_set_cursor(0, 5);     // resets cursor
-      LCD_write_string(unitConvert(translationalDistance * 3600 / (time2 - time1)));  // calculates and prints speed in mph or kph
+        LCD_write_string("0000");    // sets to 0 mph
+
+        if (adcResult > 2000) {
+          STATE = OPEN;
+        }
+      break;
+
+      default: STATE = STOP; break;
     }
   }
+  }
 }
+
 
 char* unitConvert(uint16_t value) {
 	switch(unitFlag) {

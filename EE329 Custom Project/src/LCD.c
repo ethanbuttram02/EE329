@@ -49,35 +49,35 @@
  *             edit#heading=h.j8sehv
  * -------------------------------------------------------------------------- */
 void LCD_init( void )  {
-   // Enable Port A
-   RCC->AHB2ENR   |=  (RCC_AHB2ENR_GPIOAEN);
+   // Enable Port C
+   RCC->AHB2ENR   |=  (RCC_AHB2ENR_GPIOCEN);
 
    // Clear bits of interest
-   GPIOA->MODER   &= ~(GPIO_MODER_MODE0 | GPIO_MODER_MODE1 |
+   GPIOC->MODER   &= ~(GPIO_MODER_MODE0 | GPIO_MODER_MODE1 |
                        GPIO_MODER_MODE2 | GPIO_MODER_MODE3 |
                        GPIO_MODER_MODE4 | GPIO_MODER_MODE5 |
                        GPIO_MODER_MODE6);
 
    // Set ports 0-6 to be output
-   GPIOA->MODER   |=  (GPIO_MODER_MODE0_0 | GPIO_MODER_MODE1_0 |
+   GPIOC->MODER   |=  (GPIO_MODER_MODE0_0 | GPIO_MODER_MODE1_0 |
                        GPIO_MODER_MODE2_0 | GPIO_MODER_MODE3_0 |
                        GPIO_MODER_MODE4_0 | GPIO_MODER_MODE5_0 |
                        GPIO_MODER_MODE6_0 );
 
    // Clear bits of interest, sets output to be push-pull
-   GPIOA->OTYPER  &= ~(GPIO_OTYPER_OT0 | GPIO_OTYPER_OT1 |
+   GPIOC->OTYPER  &= ~(GPIO_OTYPER_OT0 | GPIO_OTYPER_OT1 |
                        GPIO_OTYPER_OT2 | GPIO_OTYPER_OT3 |
                        GPIO_OTYPER_OT4 | GPIO_OTYPER_OT5 |
                        GPIO_OTYPER_OT6 );
 
    // Clear bits of interest, sets output to have no PU/PD resistor
-   GPIOA->PUPDR  &= ~(GPIO_PUPDR_PUPD0 | GPIO_PUPDR_PUPD1 |
+   GPIOC->PUPDR  &= ~(GPIO_PUPDR_PUPD0 | GPIO_PUPDR_PUPD1 |
                       GPIO_PUPDR_PUPD2 | GPIO_PUPDR_PUPD3 |
                       GPIO_PUPDR_PUPD4 | GPIO_PUPDR_PUPD5 |
                       GPIO_PUPDR_PUPD6);
 
    // Sets outputs to be Very High Speed (~80 MHz, Datasheet | Valid??)
-   GPIOA->OSPEEDR |=  ((3 << GPIO_OSPEEDR_OSPEED0_Pos) |
+   GPIOC->OSPEEDR |=  ((3 << GPIO_OSPEEDR_OSPEED0_Pos) |
                       (3 << GPIO_OSPEEDR_OSPEED1_Pos) |
                       (3 << GPIO_OSPEEDR_OSPEED2_Pos) |
                       (3 << GPIO_OSPEEDR_OSPEED3_Pos) |
@@ -86,7 +86,7 @@ void LCD_init( void )  {
                       (3 << GPIO_OSPEEDR_OSPEED6_Pos));
 
    // Preset outputs to zero
-   GPIOA->BRR = (GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 |
+   GPIOC->BRR = (GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 |
                  GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 |
                  GPIO_PIN_6);
 
