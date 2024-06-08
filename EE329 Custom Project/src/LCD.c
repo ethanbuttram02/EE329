@@ -7,7 +7,7 @@
    * project         : EE 329 - Spring 2024 - A2
    * authors         : Michael Mazzola - mfmazzol@calpoly.edu
    *                 : Katelynn Hoang - khoang19@calpoly.edu
-   * 				 : Ethan Buttram - ebuttram@calpoly.edu
+   * 				      : Ethan Buttram - ebuttram@calpoly.edu
    * version         : 0.1
    * date            : 04-21-2024
    * compiler        : GNU Tools for STM32 (12.3rel1)

@@ -10,6 +10,18 @@ Date: 5/30/24
 
 uint16_t adcResult;
 
+/* -----------------------------------------------------------------------------
+ * ADC_init:
+ * Operation : Configure ADC on the default pin PA0
+ * Inputs    : None
+ * Outputs   : None
+ * Locals    : None
+ * TODO      : None
+ * BUGS      : None
+ * Citation  : EE329 Lab Manual. (2024-Apr.-17). https://docs.google.com/
+ *             document/d/1xA1AfZJOFKy3r1e9WllB8o4h1oyOlbHH/
+ *             edit#heading=h.j8sehv
+ * -------------------------------------------------------------------------- */
 void ADC_init() {
     // initialize the ADC related GPIO and Registers
 
@@ -53,6 +65,19 @@ void ADC_init() {
     ADC1->CR |= ADC_CR_ADSTART;                // start 1st conversion   
 }
 
+/* -----------------------------------------------------------------------------
+ * ADC1_2_IRQHandler:
+ * Operation : handle the ADC logic with an interrupt. checks if the conversion 
+ *           : flag is set and assigns the data to adcResult
+ * Inputs    : None
+ * Outputs   : None
+ * Locals    : None
+ * TODO      : None
+ * BUGS      : None
+ * Citation  : EE329 Lab Manual. (2024-Apr.-17). https://docs.google.com/
+ *             document/d/1xA1AfZJOFKy3r1e9WllB8o4h1oyOlbHH/
+ *             edit#heading=h.j8sehv
+ * -------------------------------------------------------------------------- */
 void ADC1_2_IRQHandler(void) {
     // Check if the EOC (End of Conversion) interrupt flag is set
     if (ADC1->ISR & ADC_ISR_EOC) {

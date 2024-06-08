@@ -38,6 +38,17 @@ uint32_t sum;
 uint16_t avg = 0;
 uint8_t STATE = 0;
 
+/* -----------------------------------------------------------------------------
+ * main:
+ * Operation : handles all code. Initializes peripherals, and controls main loop. 
+ *           : This iteration is a test module for testing state conditions within the main loop
+ * Inputs    : None
+ * Outputs   : int
+ * Locals    : None
+ * TODO      : None
+ * BUGS      : None
+ * Citation  : Ethan Buttram
+ * -------------------------------------------------------------------------- */
 int main(void)
 {
   
@@ -49,7 +60,6 @@ int main(void)
   LCD_init();
 
   // initialize screen
-
   LCD_command(CLEAR);
   LCD_set_cursor(1, 0);
   LCD_write_string("MPH: 0");
@@ -127,7 +137,17 @@ int main(void)
   }
 }
 
-
+/* -----------------------------------------------------------------------------
+ * unitConvert:
+ * Operation : takes a uint16_t value and returns the character representation of it 
+ *           : with intToString and make_Counts. Checks a global variable, unitFlag, to determine mph or kph conversion
+ * Inputs    : uint16_t
+ * Outputs   : char[]
+ * Locals    : None
+ * TODO      : None
+ * BUGS      : None
+ * Citation  : Ethan Buttram & Michael Mazzola A8
+ * -------------------------------------------------------------------------- */
 char* unitConvert(uint16_t value) {
 	switch(unitFlag) {
 		case 0: // mph
@@ -138,6 +158,17 @@ char* unitConvert(uint16_t value) {
 	}
 }
 
+/* -----------------------------------------------------------------------------
+ * make_Counts:
+ * Operation : converts a uint16_t number to an array representation. 123 -> [1, 2, 3]. 
+ *           : Useful for taking results of our arithmetic for LCD processing
+ * Inputs    : uint16_t
+ * Outputs   : uint8_t[]
+ * Locals    : None
+ * TODO      : None
+ * BUGS      : None
+ * Citation  : Ethan Buttram & Michael Mazzola A8
+ * -------------------------------------------------------------------------- */
 uint8_t* make_Counts(uint16_t num) {
    numArray[0] = num / 1000;  //take thousands place
    numArray[1] = (num / 100) % 10;  //take hundreds place
@@ -146,6 +177,17 @@ uint8_t* make_Counts(uint16_t num) {
    return numArray;
 }
 
+/* -----------------------------------------------------------------------------
+ * intToString:
+ * Operation : takes an array of uint8_t and returns a char string of size 4 with the string 
+ *           : representation for the array input. ex) [1, 2, 3] -> ['1', '2', '3']
+ * Inputs    : uint8_t[]
+ * Outputs   : char*
+ * Locals    : None
+ * TODO      : None
+ * BUGS      : None
+ * Citation  : ChatGPT
+ * -------------------------------------------------------------------------- */
 char* intToString(uint8_t *digits) {
 	// Allocate memory for the resulting char array (5 characters: 4 digits + 1 null terminator)
   char *charArray = (char*) malloc(5 * sizeof(char));

@@ -7,6 +7,7 @@
    * project         : EE 329 - Spring 2024 - A2
    * authors         : Michael Mazzola - mfmazzol@calpoly.edu
    *                 : Katelynn Hoang - khoang19@calpoly.edu
+   *                 : Ethan Buttram - ebuttram@calpoly.edu
    * version         : 0.1
    * date            : 04-24-2024
    * compiler        : GNU Tools for STM32 (12.3rel1)
@@ -38,10 +39,10 @@
 #define CLEAR 0b00000001
 #define NEW_LINE 0b11000000
 #define LCD_PORT GPIOC          // set port A pins for the LCD
-#define LCD_DATA_BITS 0xF       // Data bits are set as pins 0,1,2,3    PA0: CN10 - 29, PA1: CN10 - 11, PA2: CN10 - 13, PA3: CN9 - 1
-#define LCD_EN GPIO_PIN_4       // Enable bit is set as pin 4           PA4: CN7 - 17
-#define LCD_RW GPIO_PIN_5       // Read/Write bit set as pin 5          PA5: CN7 - 10
-#define LCD_RS GPIO_PIN_6       // Register Select bit is set as pin 6  PA6: CN7 - 12
+#define LCD_DATA_BITS 0xF       // Data bits are set as pins 0,1,2,3    PC0: CN10 - 29, PC1: CN10 - 11, PC2: CN10 - 13, PC3: CN9 - 1
+#define LCD_EN GPIO_PIN_4       // Enable bit is set as pin 4           PC4: CN7 - 17
+#define LCD_RW GPIO_PIN_5       // Read/Write bit set as pin 5          PC5: CN7 - 10
+#define LCD_RS GPIO_PIN_6       // Register Select bit is set as pin 6  PC6: CN7 - 12
 #define LCD_COUNT_ADR 0xCB      // Command for setting address to count start
 #define LCD_SET_DDRAM_ADDR 0x80 // Command to set ddram address
 
